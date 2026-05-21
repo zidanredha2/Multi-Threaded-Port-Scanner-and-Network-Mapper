@@ -17,7 +17,7 @@ A high-performance, asynchronous full-stack network utility built in Java 17 usi
 
 ```bash
 # Clone the repository
-git clone [https://github.com/yourusername/network-mapper-backend.git](https://github.com/yourusername/network-mapper-backend.git)
+git clone [https://github.com/zidanredha2/Multi-Threaded-Port-Scanner-and-Network-Mapper.git](https://github.com/zidanredha2/Multi-Threaded-Port-Scanner-and-Network-Mapper.git)
 cd network-mapper-backend
 
 # Build the executable fat JAR
@@ -27,3 +27,105 @@ mvn clean package
 java -jar target/network-mapper-backend-1.0-SNAPSHOT.jar
 ```
 ---
+
+## 🐳 Docker Containerization
+
+The application utilizes a **multi-stage Docker build** to separate the compilation environment from the final execution runtime. This cloud-native best practice strips away heavy build tools (like Maven and the full JDK), reducing the final production image size from over 800MB down to an ultra-lightweight **~100MB**.
+
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+---
+
+### 1. Create the Dockerfile
+
+Ensure you have a file named exactly `Dockerfile` (no extension) in your root directory (`network-mapper-backend/`) with the following multi-stage build setup:
+
+```dockerfile
+# ==========================================
+# STAGE 1: The Compilation & Build Environment
+# ==========================================
+FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+
+WORKDIR /build
+
+# Copy the build configuration file first to leverage Docker layer caching
+COPY pom.xml .
+
+# Copy the entire source directory
+COPY src ./src
+
+# Compile and package the executable shadow fat-JAR, skipping unit tests
+RUN mvn clean package -DskipTests
+
+# ==========================================
+# STAGE 2: The Lightweight Runtime Environment
+# ==========================================
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Copy ONLY the final compiled binary from the builder stage
+COPY --from=builder /build/target/network-mapper-backend-1.0-SNAPSHOT.jar app.jar
+
+# Run the application as a non-root system user for production security hardening
+RUN addgroup -S runnergroup && adduser -S runneruser -G runnergroup
+USER runneruser
+
+# Define the execution command to launch our multi-threaded engine
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+```
+
+---
+
+### 2. Build the Production Image
+
+Navigate to the root directory containing the `Dockerfile` and execute the following command to compile your source code and build the hardened runtime container:
+
+```bash
+docker build -t network-scanner-backend .
+
+```
+
+---
+
+### 3. Execution Environments
+
+Because Docker containers run inside an isolated virtual network by default, you can run this tool in two distinct networking modes depending on your objective:
+
+#### Mode A: Isolated Virtual Bridge (Default Sandbox)
+
+This mode limits the scanner to its own internal container sandbox. It is ideal for staging environments or checking internal container dependencies.
+
+```bash
+docker run -e SCAN_TARGET="127.0.0.1" -e SCAN_THREADS="150" network-scanner-backend
+
+```
+
+> 📌 *Note: In this mode, scanning `127.0.0.1` refers to the container itself, so it will likely report zero open ports unless services are running explicitly inside it.*
+
+#### Mode B: Host Networking Mode (Real-World Adapter Access)
+
+To grant the application direct access to scan the host machine's physical network adapters and discover actual open system ports, attach the `--network=host` flag:
+
+```bash
+docker run --network=host -e SCAN_TARGET="127.0.0.1" -e SCAN_THREADS="100" network-scanner-backend
+
+```
+
+> 🔥 *Observation: Running this mode bypasses container network virtualization, allowing your Java engine to instantly flag system daemons (like CUPS on port `631`, local databases, or active web servers) running on your physical machine.*
+
+---
+
+### ⚙️ Dynamic Runtime Configuration
+
+The containerized engine dynamically shifts behavior based on injected environment variables, completely removing the need to recompile your source code:
+
+| Environment Variable | Default Value | Description                                                              |
+|----------------------|---------------|--------------------------------------------------------------------------|
+| `SCAN_TARGET`        | `127.0.0.1`   | The target IP address or domain name to scan.                            |
+| `SCAN_THREADS`       | `100`         | The number of concurrent worker threads allocated to the execution pool. |
+
+---
+
