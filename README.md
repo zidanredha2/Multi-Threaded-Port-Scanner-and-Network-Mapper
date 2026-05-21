@@ -27,14 +27,3 @@ mvn clean package
 java -jar target/network-mapper-backend-1.0-SNAPSHOT.jar
 ```
 ---
-
-### 3. Keep Configurations Dynamic (Environment Variables)
-Right now, your code has values like `threadPoolSize = 100` and `targetHost = "127.0.0.1"` hardcoded inside your `main` method. Hardcoding environment settings makes code difficult to deploy inside Docker containers or production servers.
-
-Before pushing to Git, swap those hardcoded lines in `App.java` with dynamic system pickups:
-
-```java
-// Reads from system environment variables; falls back to defaults if not provided
-String targetHost = System.getenv("SCAN_TARGET") != null ? System.getenv("SCAN_TARGET") : "127.0.0.1";
-int threadPoolSize = System.getenv("SCAN_THREADS") != null ? Integer.parseInt(System.getenv("SCAN_THREADS")) : 100;
-```
