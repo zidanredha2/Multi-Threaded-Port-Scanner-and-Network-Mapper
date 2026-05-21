@@ -18,7 +18,7 @@ A high-performance, asynchronous full-stack network utility built in Java 17 usi
 ```bash
 # Clone the repository
 git clone [https://github.com/zidanredha2/Multi-Threaded-Port-Scanner-and-Network-Mapper.git](https://github.com/zidanredha2/Multi-Threaded-Port-Scanner-and-Network-Mapper.git)
-cd network-mapper-backend
+cd Multi-Threaded-Port-Scanner-and-Network-Mapper
 
 # Build the executable fat JAR
 mvn clean package
@@ -39,7 +39,7 @@ The application utilizes a **multi-stage Docker build** to separate the compilat
 
 ### 1. Create the Dockerfile
 
-Ensure you have a file named exactly `Dockerfile` (no extension) in your root directory (`network-mapper-backend/`) with the following multi-stage build setup:
+Ensure you have a file named exactly `Dockerfile` (no extension) in your root directory (`Multi-Threaded-Port-Scanner-and-Network-Mapper/`) with the following multi-stage build setup:
 
 ```dockerfile
 # ==========================================
