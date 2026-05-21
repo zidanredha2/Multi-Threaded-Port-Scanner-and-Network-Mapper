@@ -1,1 +1,16 @@
-.idea
+# Maven build outputs
+target/
+*.jar
+*.war
+
+# IDE specific files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS temporary files
+.DS_Store
+Thumbs.db
