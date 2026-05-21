@@ -19,11 +19,11 @@ public class App {
         }
     }
     public static void main(String[] args) {
-        String targetHost = "127.0.0.1";
+        String targetHost = System.getenv("SCAN_TARGET")!=null?System.getenv("SCAN_TARGET"):"127.0.0.1";
         int startPort = 1;
         int endPort = 1024;
         int timeoutMs = 200;
-        int threadPoolSize = 100;
+        int threadPoolSize = System.getenv("SCAN_THREADS")!=null?Integer.parseInt(System.getenv("SCAN_THREADS")):100;
         System.out.println("==================================================");
         System.out.println("   MULTI-THREADED PORT SCANNER ENGINE INITIALIZED ");
         System.out.println("==================================================");
